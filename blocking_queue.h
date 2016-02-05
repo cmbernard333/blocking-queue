@@ -3,6 +3,13 @@
 
 /* public API */
 
+
+typedef enum {
+	BQUEUE_SUCCESS=0,
+	BQUEUE_INVALID_ARG,
+	BQUEUE_NOMEM
+}BlockingQueueError;
+
 typedef struct queue_node_t QueueNode;
 typedef struct blocking_queue_t BlockingQueue;
 

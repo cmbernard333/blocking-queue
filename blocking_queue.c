@@ -7,32 +7,32 @@ void BlockingQueue_signal_consumers(int signal_mode);
 
 int BlockingQueue_init(BlockingQueue **_bqueue)
 {
-	int rc = NIME_OK;
+	int rc = BQUEUE_SUCCESS;
 	BlockingQueue *bqueue = NULL;
 	bqueue = calloc(1,sizeof(BlockingQueue));
 	if(!bqueue)
 	{
-		return NIME_NOMEM;
+		return BQUEUE_NOMEM;
 	}
 
 	/* initialize condition and lock */
 	rc = ThreadConditionVar_init(&bqueue->queue_empty);
 	if(rc)
 	{
-		return NIME_NOMEM;
+		return BQUEUE_NOMEM;
 	}
 	/* lock for write */
 	rc = ThreadLock_init(&bqueue->head_lock);
 	if(rc)
 	{
-		return NIME_NOMEM;
+		return BQUEUE_NOMEM;
 	}
 
 	/* lock for read */
 	rc = ThreadLock_init(&bqueue->tail_lock);
 	if(rc)
 	{
-		return NIME_NOMEM;
+		return BQUEUE_NOMEM;
 	}
 
 	/* setup queue */
@@ -52,7 +52,7 @@ int BlockingQueue_destroy(BlockingQueue *bqueue)
 {
 	if(!bqueue)
 	{
-		return NIME_INVAL;
+		return BQUEUE_INVALID_ARG;
 	}
 	/* cleanup the condition */
 	ThreadConditionVar_cleanup(bqueue->queue_empty);
@@ -61,7 +61,7 @@ int BlockingQueue_destroy(BlockingQueue *bqueue)
 	ThreadLock_cleanup(bqueue->tail_lock);
 	
 	free(bqueue);
-	return NIME_OK;
+	return BQUEUE_SUCCESS;
 }
 
 int BlockingQueue_put(BlockingQueue *bqueue, QueueNode *node)
@@ -69,21 +69,21 @@ int BlockingQueue_put(BlockingQueue *bqueue, QueueNode *node)
 	/* condition wait infinite */
 	if(!bqueue|!node)
 	{
-		return NIME_INVAL;
+		return BQUEUE_INVALID_ARG;
 	}
 	node->next = NULL;
 	ThreadLock_lock(bqueue->tail_lock);
 	/* check the capacity size */
 	if(bqueue->capacity > 0 && bqueue->size +1 > bqueue->capacity)
 	{
-		return NIME_NOMEM;
+		return BQUEUE_NOMEM;
 	}
 	bqueue->tail->next = node;
 	bqueue->tail = node;
 	bqueue->size+= 1;
 	ThreadConditionVar_signal_all(bqueue->queue_empty);
 	ThreadLock_unlock(bqueue->tail_lock);
-	return NIME_OK;
+	return BQUEUE_SUCCESS;
 
 }
 
@@ -92,7 +92,7 @@ int BlockingQueue_offer(BlockingQueue *bqueue, QueueNode *node, unsigned long ms
 	/* condition wait with a timeout */
 	if(!bqueue|!node|!ms_wait<0)
 	{
-		return NIME_INVAL;
+		return BQUEUE_INVALID_ARG;
 	}
 	node->next = NULL;
 	ThreadLock_lock(bqueue->tail_lock);
@@ -101,7 +101,7 @@ int BlockingQueue_offer(BlockingQueue *bqueue, QueueNode *node, unsigned long ms
 	bqueue->size+=1;
 	ThreadConditionVar_signal_all(bqueue->queue_empty);
 	ThreadLock_unlock(bqueue->tail_lock);
-	return NIME_OK;
+	return BQUEUE_SUCCESS;
 }
 
 QueueNode *BlockingQueue_take(BlockingQueue *bqueue)
@@ -109,7 +109,7 @@ QueueNode *BlockingQueue_take(BlockingQueue *bqueue)
 	/* condition wait infinite */
 	if(!bqueue)
 	{
-		return NIME_INVAL;
+		return BQUEUE_INVALID_ARG;
 	}
 
 	QueueNode *head, *next;
@@ -152,7 +152,7 @@ QueueNode *BlockingQueue_poll(BlockingQueue *bqueue, unsigned long ms_wait)
 	/* condition wait with a time out */
 	if(!bqueue)
 	{
-		return NIME_INVAL;
+		return BQUEUE_INVALID_ARG;
 	}
 	return NULL;
 }
@@ -164,7 +164,7 @@ int BlockingQueue_isEmpty(BlockingQueue *bqueue)
 
 int BlockingQueue_set_capacity(BlockingQueue *bqueue, size_t capacity)
 {
-	int rc = NIME_OK;
+	int rc = BQUEUE_SUCCESS;
 	ThreadLock_lock(bqueue->tail_lock);
 	if(capacity<0)
 	{
@@ -174,14 +174,14 @@ int BlockingQueue_set_capacity(BlockingQueue *bqueue, size_t capacity)
 	else if(capacity == 0 )
 	{
 		/* no elements ? */
-		rc = NIME_INVAL;
+		rc = BQUEUE_INVALID_ARG;
 	}
 	else if(bqueue->size > capacity)
 	{
 		/* don't shrink the capacity if the pool already exceeds it */
-		rc = NIME_INVAL;
+		rc = BQUEUE_INVALID_ARG;
 	}
-	if(rc == NIME_OK)
+	if(rc == BQUEUE_SUCCESS)
 	{
 		bqueue->capacity = capacity;
 	}

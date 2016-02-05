@@ -1,8 +1,8 @@
 #ifndef _blocking_queue_internal_h
 #define _blocking_queue_internal_h
 
-#include "simple_thread.h"
 #include "blocking_queue.h"
+#include "simplethread/simple_thread.h"
 
 /* internal API */
 

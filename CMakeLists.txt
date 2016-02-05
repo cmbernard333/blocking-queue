@@ -7,6 +7,6 @@ set(SRC_FILES
 	blocking_queue.c)
 add_library(blocking_queue STATIC ${SRC_FILES})
 
-include_directories("simple-thread/include")
+include_directories("simple-thread")
 
 add_dependencies(blocking_queue simple_thread)
