@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "blocking_queue_internal.h"
 
 #define QUEUE_POISON1 ((void*)0xCAFEBAB5)

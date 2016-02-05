@@ -1,9 +1,6 @@
 #ifndef _blocking_queue_internal_h
 #define _blocking_queue_internal_h
 
-#include <nimbus.h>
-#include <nim.h>
-
 #include "simple_thread.h"
 #include "blocking_queue.h"
 
